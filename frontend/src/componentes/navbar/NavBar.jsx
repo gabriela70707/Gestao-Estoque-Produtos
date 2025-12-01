@@ -1,18 +1,45 @@
 import styled from "styled-components";
+import { LayoutDashboard, Package, History } from 'lucide-react';
 
-export default function NavBar(){
-    
+export default function NavBar() {
+
     const NavBar = styled.nav`
-        background-color: blue;
-        width: clamp(400px, 95%, 1200px);
-        margin: 0 auto;
+        display: flex;
+        background-color: #ffffff;
+
+        padding: 3rem 0 0 0;
+        gap: 3rem;
     `;
 
-    return(
+    const Options = styled.button`
+        border: none;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    `;
+
+    return (
         <>
             <NavBar>
-                <h3>oi :)</h3>
-            </NavBar>     
+
+                <Options>
+                    <LayoutDashboard />
+                    <p>Dashboard</p>
+                </Options>
+
+                <Options>
+                    <Package />
+                    <p>Produtos</p>
+                </Options>
+
+                <Options>
+                    <History />
+                    <p>Histórico</p>
+                </Options>
+
+            </NavBar>
         </>
     );
 }

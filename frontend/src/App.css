@@ -3,3 +3,10 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+body{
+  display: grid;
+  font-family: "Kedebideri", sans-serif;
+  width: clamp(400px, 95%, 1200px);
+  margin: 0 auto;
+}

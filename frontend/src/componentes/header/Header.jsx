@@ -8,8 +8,7 @@ const HeaderContainer  = styled.header`
     display: flex;
     background-color: #ffffff;
     color: black;
-    width: clamp(400px, 95%, 1200px);
-    margin: 0 auto;
+    margin-top: 1.2rem;
 `;
 
 const Logo = styled.div`

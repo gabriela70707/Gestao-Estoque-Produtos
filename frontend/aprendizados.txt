@@ -1,0 +1,2 @@
+npm install polished (Instale uma lib para manipular cores (opcional mas recomendado)
+A mais usada é polished, que tem helpers como lighten e transparentize:)
