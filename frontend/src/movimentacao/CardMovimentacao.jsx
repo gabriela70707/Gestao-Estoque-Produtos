@@ -72,13 +72,19 @@ export function CardMovimentacao() {
             </Line>
 
             <Line>
+            <div className="monitoramento">
                 <FundoLogo color='#5A1B02FF'>
                     <TrendingDown color='#5A1B02FF' />
                 </FundoLogo>
-                <p>iPhone 15 Pro</p>
-                <p>Entrada de 10 unidade(s)</p>
+                <div className="info-produtos">
+                    <p>iPhone 15 Pro</p>
+                    <p>Entrada de 10 unidade(s)</p>
+                </div>
+            </div>
+            <div className="info-cliente">
                 <p>João Silva</p>
                 <p>20/11/2024</p>
+            </div>
             </Line>
 
         </Container>
