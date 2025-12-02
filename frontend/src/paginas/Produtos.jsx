@@ -2,8 +2,9 @@ import styled from "styled-components";
 import Header from "../componentes/header/Header";
 import NavBar from "../componentes/navbar/NavBar";
 import { Button } from "../componentes/button/Button";
-import { BarraPesquisa } from "..BarraPesquisa/componentes/barra-pesquisa/BarraPesquisa";
-import { Select } from "..Select/componentes/select/Select";
+
+import { BarraPesquisa } from "../componentes/barra-pesquisa/BarraPesquisa";
+import { Select } from "../componentes/select/Select";
 
 const Produto = () => {
   const Title = styled.div`
