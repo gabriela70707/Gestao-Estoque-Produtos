@@ -2,7 +2,7 @@ import styled from "styled-components";
 import Header from "../componentes/header/Header";
 import NavBar from "../componentes/navbar/NavBar";
 import { Button } from "../componentes/button/Button";
-
+import { TabelaProdutos } from "../componentes/tabela-produtos/TabelaProdutos";
 import { BarraPesquisa } from "../componentes/barra-pesquisa/BarraPesquisa";
 import { Select } from "../componentes/select/Select";
 
@@ -39,6 +39,7 @@ const Produto = () => {
         <BarraPesquisa />
         <Select descricao={"Todas as Categorias"} />
       </Opcoes>
+      <TabelaProdutos />
     </>
   );
 };

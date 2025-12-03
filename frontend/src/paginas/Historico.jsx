@@ -6,6 +6,7 @@ import { Card } from "../componentes/cards/Card";
 import { Funnel } from "lucide-react";
 import { BarraPesquisa } from "../componentes/barra-pesquisa/BarraPesquisa";
 import { Select } from "../componentes/select/Select";
+import { TabelaHistorico } from "../componentes/tabela-historico/TabelaHistorico";
 
 const Historico = () => {
   const Title = styled.div`
@@ -75,6 +76,7 @@ const Historico = () => {
           <Select descricao={"Todas as Datas"} />
         </div>
       </Filtros>
+      <TabelaHistorico />
     </>
   );
 };
