@@ -4,7 +4,6 @@ import Header from "../componentes/header/Header";
 import NavBar from "../componentes/navbar/NavBar";
 import { Button } from "../componentes/button/Button";
 import { TabelaProdutos } from "../componentes/tabela-produtos/TabelaProdutos";
-import { BarraPesquisa } from "../componentes/barra-pesquisa/BarraPesquisa";
 import { ModalProduto } from "../componentes/modal-produtos/ModalProdutos";
 import { api } from "../service/api";
 
@@ -36,8 +35,13 @@ const Produto = () => {
         nome: p.nome,
         detalhes: p.descricao,
         categoria: p.categoria.nome,
+        categoria_id: p.categoria.id,
         quantidade: p.estoque_atual,
         minimo: p.estoque_minimo,
+        tela: p.tela,
+        armazenamento: p.armazenamento,
+        ram: p.ram,
+        tensao: p.tensao,
         especificacoes: [
           p.tela && `Tela: ${p.tela}`,
           p.armazenamento && `Armazenamento: ${p.armazenamento}`,
@@ -63,7 +67,22 @@ const Produto = () => {
 
   const handleEditarProduto = (id) => {
     const produto = produtos.find(p => p.id === id);
-    setProdutoEditando(produto);
+    if (!produto) return;
+    
+    // Converter produto para formato do formulário
+    const produtoParaEditar = {
+      nome: produto.nome,
+      descricao: produto.detalhes,
+      categoria_id: produto.categoria_id,
+      estoque_atual: produto.quantidade,
+      estoque_minimo: produto.minimo,
+      tela: produto.tela || "",
+      armazenamento: produto.armazenamento || "",
+      ram: produto.ram || "",
+      tensao: produto.tensao || ""
+    };
+    
+    setProdutoEditando({ id: produto.id, ...produtoParaEditar });
     setModalAberto(true);
   };
 
@@ -73,7 +92,8 @@ const Produto = () => {
     try {
       await api.deletarProduto(id);
       alert("Produto excluído com sucesso!");
-      carregarDados();
+      // Recarregar dados
+      await carregarDados();
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Erro ao excluir produto.");
@@ -82,15 +102,19 @@ const Produto = () => {
 
   const handleSalvarProduto = async (dados) => {
     try {
-      if (produtoEditando) {
+      if (produtoEditando && produtoEditando.id) {
+        // Atualizar produto existente
         await api.atualizarProduto(produtoEditando.id, dados);
         alert("Produto atualizado com sucesso!");
       } else {
+        // Criar novo produto
         await api.criarProduto(dados);
         alert("Produto cadastrado com sucesso!");
       }
       setModalAberto(false);
-      carregarDados();
+      setProdutoEditando(null);
+      // Recarregar dados
+      await carregarDados();
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
       alert("Erro ao salvar produto.");
@@ -104,17 +128,25 @@ const Produto = () => {
     margin-top: 2rem;
 
     h1 {
-      font-size: 1rem;
+      font-size: 1.5rem;
     }
   `;
 
   const Opcoes = styled.section`
     display: flex;
     margin-top: 2rem;
-    gap: 5rem;
+    gap: 2rem;
     box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1);
     padding: 1.4rem;
     border-radius: 1rem;
+  `;
+
+  const Input = styled.input`
+    padding: 0.7rem;
+    border: solid 0.1rem #727272ff;
+    border-radius: 1rem;
+    width: 100%;
+    font-size: 0.95rem;
   `;
 
   const Select = styled.select`
@@ -126,6 +158,7 @@ const Produto = () => {
     gap: 1rem;
     align-items: center;
     color: black;
+    font-size: 0.95rem;
   `;
 
   const LoadingMessage = styled.div`
@@ -147,17 +180,11 @@ const Produto = () => {
       </Title>
       
       <Opcoes>
-        <input
+        <Input
           type="text"
           placeholder="Buscar produtos..."
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          style={{
-            padding: "0.7rem",
-            border: "solid 0.1rem #727272ff",
-            borderRadius: "1rem",
-            width: "100%"
-          }}
         />
         
         <Select
@@ -183,7 +210,10 @@ const Produto = () => {
 
       {modalAberto && (
         <ModalProduto
-          onClose={() => setModalAberto(false)}
+          onClose={() => {
+            setModalAberto(false);
+            setProdutoEditando(null);
+          }}
           onSalvar={handleSalvarProduto}
           produto={produtoEditando}
         />

@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../componentes/header/Header";
 import NavBar from "../componentes/navbar/NavBar";
-import { Alerta } from "../componentes/alerta/Alert";
 import { Button } from "../componentes/button/Button";
-import { CardGeral } from "../componentes/card-info-geral/CardGeral";
-import { NavCategoriaEstoque } from "../componentes/estoque-categoria/Nav-Estoque-Categoria";
-import { CardMovimentacao } from "../componentes/movimentacao/CardMovimentacao";
 import { ModalMovimentacao } from "../componentes/modal-movimentacao/ModalMovimentacao";
 import { api } from "../service/api";
+import { TrendingUp, TrendingDown, Package, DollarSign, CircleArrowUp, CircleArrowDown, TriangleAlert } from 'lucide-react';
+import { lighten } from "polished";
 
 const Home = () => {
   const [modalAberto, setModalAberto] = useState(false);
@@ -19,6 +17,8 @@ const Home = () => {
     saidas7dias: 0
   });
   const [produtosBaixo, setProdutosBaixo] = useState([]);
+  const [ultimasMovimentacoes, setUltimasMovimentacoes] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,10 +28,11 @@ const Home = () => {
   const carregarDados = async () => {
     try {
       setLoading(true);
-      const [produtos, movimentacoes, estoqueBaixo] = await Promise.all([
+      const [produtos, movimentacoes, estoqueBaixo, categoriasData] = await Promise.all([
         api.listarProdutos(),
         api.listarMovimentacoes(),
-        api.produtosEstoqueBaixo()
+        api.produtosEstoqueBaixo(),
+        api.listarCategorias()
       ]);
 
       // Calcular estatísticas
@@ -62,6 +63,22 @@ const Home = () => {
       });
 
       setProdutosBaixo(estoqueBaixo);
+      
+      // Pegar as 5 últimas movimentações
+      setUltimasMovimentacoes(movimentacoes.slice(0, 5));
+
+      // Calcular estoque por categoria
+      const estoquesPorCategoria = categoriasData.map(cat => {
+        const produtosDaCategoria = produtos.filter(p => p.categoria.id === cat.id);
+        const totalUnidades = produtosDaCategoria.reduce((sum, p) => sum + p.estoque_atual, 0);
+        return {
+          nome: cat.nome,
+          unidades: totalUnidades,
+          produtos: produtosDaCategoria.length
+        };
+      });
+
+      setCategorias(estoquesPorCategoria);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       alert("Erro ao carregar dados. Verifique sua conexão.");
@@ -75,7 +92,7 @@ const Home = () => {
       await api.criarMovimentacao(dados);
       alert("Movimentação registrada com sucesso!");
       setModalAberto(false);
-      carregarDados(); // Recarregar dados
+      carregarDados();
     } catch (error) {
       console.error("Erro ao registrar movimentação:", error);
       throw new Error(error.message || "Erro ao registrar movimentação");
@@ -105,8 +122,9 @@ const Home = () => {
         <Button text={"Registrar movimentação"} color={"#4171c9"} />
       </div>
       
-      <NavCategoriaEstoque />
-      <CardMovimentacao />
+      <EstoquePorCategoria categorias={categorias} />
+      
+      <UltimasMovimentacoes movimentacoes={ultimasMovimentacoes} />
 
       {modalAberto && (
         <ModalMovimentacao
@@ -120,73 +138,35 @@ const Home = () => {
 
 // Componente de Alerta dinâmico
 const AlertaBaixoEstoque = ({ produtos }) => {
-  const Content = styled.div`
-    display: grid;
-    background-color: #EB76762D;
-    margin-top: 3rem;
-    padding: 1.2rem;
-    gap: 1rem;
-    border-left: 5px solid red;
-    border-radius: 0.5rem;
-  `;
-
-  const Title = styled.div`
-    display: flex;
-    gap: 0.9rem;
-    align-items: center;
-    font-weight: 600;
-  `;
-
   return (
-    <Content>
-      <Title>
-        ⚠️ Alerta de Estoque Baixo
-      </Title>
-      <div>
+    <AlertContent>
+      <AlertTitle>
+        <TriangleAlert color='red'/>
+        <p>Alerta de Estoque Baixo</p>
+      </AlertTitle>
+      <AlertItens>
         {produtos.map(produto => (
           <p key={produto.id}>
             • {produto.nome} - Estoque atual: {produto.estoque_atual} (mínimo: {produto.estoque_minimo})
           </p>
         ))}
-      </div>
-    </Content>
+      </AlertItens>
+    </AlertContent>
   );
 };
 
 // Componente CardGeral dinâmico
 const CardGeralDinamico = ({ estatisticas }) => {
-  const Content = styled.div`
-    display: flex;
-    margin-top: 2rem;
-    justify-content: space-between;
-  `;
-
-  const Card = styled.div`
-    display: flex;
-    height: 5.9rem;
-    width: 18rem;
-    border-radius: 0.5rem;
-    background-color: #ffffff;
-    padding: 0.8rem;
-    box-shadow: 0 0 4px 2px rgba(0,0,0,0.1);
-    place-items: center;    
-    justify-content: space-around;
-  `;
-
-  const Info = styled.div`
-    display: grid;
-    text-align: start;
-    height: 3.5rem;
-    align-items: center;
-  `;
-
   return (
-    <Content>
+    <CardContainer>
       <Card>
         <Info>
           <p>Total de Produtos</p>
           <h2>{estatisticas.totalProdutos}</h2>
         </Info>
+        <FundoLogo color="#0C2655FF">
+          <Package color="#0C2655FF"/>
+        </FundoLogo>
       </Card>
 
       <Card>
@@ -194,6 +174,9 @@ const CardGeralDinamico = ({ estatisticas }) => {
           <p>Itens em Estoque</p>
           <h2>{estatisticas.totalEstoque}</h2>
         </Info>
+        <FundoLogo color="#4D0650FF">
+          <DollarSign color="#4D0650FF"/>
+        </FundoLogo>
       </Card>
 
       <Card>
@@ -201,6 +184,9 @@ const CardGeralDinamico = ({ estatisticas }) => {
           <p>Entradas (7 dias)</p>
           <h2>{estatisticas.entradas7dias}</h2>
         </Info>
+        <FundoLogo color="#014201FF">
+          <CircleArrowUp color="#014201FF"/>
+        </FundoLogo>
       </Card>
 
       <Card>
@@ -208,10 +194,193 @@ const CardGeralDinamico = ({ estatisticas }) => {
           <p>Saídas (7 dias)</p>
           <h2>{estatisticas.saidas7dias}</h2>
         </Info>
+        <FundoLogo color="#5A1B02FF">
+          <CircleArrowDown color="#5A1B02FF"/>
+        </FundoLogo>
       </Card>
-    </Content>
+    </CardContainer>
   );
 };
+
+// Componente Estoque por Categoria
+const EstoquePorCategoria = ({ categorias }) => {
+  return (
+    <CategoriaContainer>
+      <CategoriaTitle>
+        <p>Estoque por Categoria</p>
+      </CategoriaTitle>
+      <CategoriaCards>
+        {categorias.map((cat, index) => (
+          <CategoriaCard key={index}>
+            <p style={{ fontWeight: '600' }}>{cat.nome}</p>
+            <p>{cat.unidades} unidades</p>
+            <p style={{ fontSize: '0.9rem', color: '#6c757d' }}>{cat.produtos} produto(s)</p>
+          </CategoriaCard>
+        ))}
+      </CategoriaCards>
+    </CategoriaContainer>
+  );
+};
+
+// Componente Últimas Movimentações
+const UltimasMovimentacoes = ({ movimentacoes }) => {
+  return (
+    <MovimentacaoContainer>
+      <p style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '1rem' }}>
+        Últimas Movimentações
+      </p>
+      {movimentacoes.map(mov => (
+        <MovimentacaoLine key={mov.id}>
+          <MovimentacaoInfo>
+            <FundoLogo color={mov.tipo === 'entrada' ? '#003A0DFF' : '#5A1B02FF'}>
+              {mov.tipo === 'entrada' ? (
+                <TrendingUp color='#003A0DFF' />
+              ) : (
+                <TrendingDown color='#5A1B02FF' />
+              )}
+            </FundoLogo>
+            <div>
+              <p style={{ fontWeight: '600' }}>{mov.produto.nome}</p>
+              <p style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+                {mov.tipo === 'entrada' ? 'Entrada' : 'Saída'} de {mov.quantidade} unidade(s)
+              </p>
+            </div>
+          </MovimentacaoInfo>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontWeight: '600' }}>{mov.usuario.nome}</p>
+            <p style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+              {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+        </MovimentacaoLine>
+      ))}
+    </MovimentacaoContainer>
+  );
+};
+
+// Styled Components
+const AlertContent = styled.div`
+  display: grid;
+  background-color: #EB76762D;
+  margin-top: 3rem;
+  padding: 1.2rem;
+  gap: 1rem;
+  border-left: 5px solid red;
+  border-radius: 0.5rem;
+`;
+
+const AlertTitle = styled.div`
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  font-weight: 600;
+`;
+
+const AlertItens = styled.div`
+  display: grid;
+  gap: 0.3rem;
+`;
+
+const CardContainer = styled.div`
+  display: flex;
+  margin-top: 2rem;
+  justify-content: space-between;
+  gap: 1rem;
+`;
+
+const Card = styled.div`
+  display: flex;
+  height: 5.9rem;
+  flex: 1;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  padding: 0.8rem;
+  box-shadow: 0 0 4px 2px rgba(0,0,0,0.1);
+  place-items: center;    
+  justify-content: space-around;
+`;
+
+const Info = styled.div`
+  display: grid;
+  text-align: start;
+  height: 3.5rem;
+  align-items: center;
+  
+  p {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+  }
+`;
+
+const FundoLogo = styled.div`
+  display: grid;  
+  place-items: center;
+  height: clamp(2rem, 3vw, 3.5rem);
+  width: clamp(2rem, 3vw, 3.5rem);
+  border-radius: 1rem;
+  background-color: ${({ color }) => lighten(0.75, color)}; 
+`;
+
+const CategoriaContainer = styled.section`
+  display: grid;
+  box-shadow: 0 0 4px 2px rgba(0,0,0,0.1);
+  margin-top: 2rem;
+  padding: 2rem;
+  border-radius: 1rem;
+`;
+
+const CategoriaTitle = styled.div`
+  display: flex;
+  padding: 0 0 2rem 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+`;
+
+const CategoriaCards = styled.div`
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+`;
+
+const CategoriaCard = styled.div`
+  display: grid;
+  height: 5.9rem;
+  flex: 1;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  padding: 0.8rem;
+  border: 0.2px solid #E6E6E6FF;
+  place-items: start;
+`;
+
+const MovimentacaoContainer = styled.section`
+  display: grid;
+  box-shadow: 0 0 4px 2px rgba(0,0,0,0.1);
+  margin-top: 3rem;
+  padding: 2rem;
+  border-radius: 1rem;
+  gap: 1rem;
+  margin-bottom: 3rem;
+`;
+
+const MovimentacaoLine = styled.div`
+  display: flex;
+  border: 0.2px solid #E6E6E6FF;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 1rem;
+`;
+
+const MovimentacaoInfo = styled.div`
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+`;
 
 const LoadingMessage = styled.div`
   text-align: center;

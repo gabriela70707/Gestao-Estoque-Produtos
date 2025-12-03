@@ -29,10 +29,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # FastAPI app
 app = FastAPI(title="SAEP - Sistema de Gestão de Equipamentos")
 
-# CORS
+# CORS - CORRIGIDO
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -77,7 +77,7 @@ class Produto(Base):
     data_criacao = Column(DateTime, default=datetime.utcnow)
     data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     categoria = relationship("Categoria", back_populates="produtos")
-    movimentacoes = relationship("Movimentacao", back_populates="produto")
+    movimentacoes = relationship("Movimentacao", back_populates="produto", cascade="all, delete-orphan")
 
 class Movimentacao(Base):
     __tablename__ = "movimentacoes"
@@ -163,6 +163,21 @@ class MovimentacaoCreate(BaseModel):
     observacoes: Optional[str] = None
     data_movimentacao: datetime
 
+class UsuarioSimples(BaseModel):
+    id: int
+    nome: str
+    email: str
+    
+    class Config:
+        from_attributes = True
+
+class ProdutoSimples(BaseModel):
+    id: int
+    nome: str
+    
+    class Config:
+        from_attributes = True
+
 class MovimentacaoResponse(BaseModel):
     id: int
     produto_id: int
@@ -171,8 +186,8 @@ class MovimentacaoResponse(BaseModel):
     quantidade: int
     observacoes: Optional[str]
     data_movimentacao: datetime
-    produto: dict
-    usuario: dict
+    produto: ProdutoSimples
+    usuario: UsuarioSimples
     
     class Config:
         from_attributes = True
@@ -240,6 +255,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 @app.post("/usuarios", response_model=UsuarioResponse)
 def criar_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+    # Verificar se email já existe
+    db_usuario_exists = db.query(Usuario).filter(Usuario.email == usuario.email).first()
+    if db_usuario_exists:
+        raise HTTPException(status_code=400, detail="Email já cadastrado")
+    
     # Gerar hash da senha
     hashed_password = get_password_hash(usuario.senha)
 
@@ -253,9 +273,6 @@ def criar_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_usuario)
     return db_usuario
-
-
-
 
 @app.get("/usuarios/me", response_model=UsuarioResponse)
 async def read_users_me(current_user: Usuario = Depends(get_current_user)):
@@ -279,7 +296,18 @@ def listar_produtos(
         query = query.filter(Produto.nome.contains(busca))
     if categoria_id:
         query = query.filter(Produto.categoria_id == categoria_id)
-    return query.offset(skip).limit(limit).all()
+    return query.order_by(Produto.nome).offset(skip).limit(limit).all()
+
+@app.get("/produtos/{produto_id}", response_model=ProdutoResponse)
+def obter_produto(
+    produto_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    produto = db.query(Produto).filter(Produto.id == produto_id).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return produto
 
 @app.post("/produtos", response_model=ProdutoResponse, status_code=status.HTTP_201_CREATED)
 def criar_produto(
@@ -307,6 +335,7 @@ def atualizar_produto(
     for key, value in produto.dict(exclude_unset=True).items():
         setattr(db_produto, key, value)
     
+    db_produto.data_atualizacao = datetime.utcnow()
     db.commit()
     db.refresh(db_produto)
     return db_produto
