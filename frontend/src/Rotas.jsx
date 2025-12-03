@@ -3,7 +3,7 @@ import Home from "./paginas/Home";
 import Produto from "./paginas/Produtos";
 import { Routes, Route } from "react-router-dom";
 
-function Rotas() {
+export function Rotas() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -13,4 +13,4 @@ function Rotas() {
   );
 }
 
-export default Rotas;
+

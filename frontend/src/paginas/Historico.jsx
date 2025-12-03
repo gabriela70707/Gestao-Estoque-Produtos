@@ -1,4 +1,11 @@
 import styled from "styled-components";
+import Header from "../componentes/header/Header";
+import NavBar from "../componentes/navbar/NavBar";
+import { Button } from "../componentes/button/Button";
+import { Card } from "../componentes/cards/Card";
+import { Funnel } from "lucide-react";
+import { BarraPesquisa } from "../componentes/barra-pesquisa/BarraPesquisa";
+import { Select } from "../componentes/select/Select";
 
 const Historico = () => {
   const Title = styled.div`

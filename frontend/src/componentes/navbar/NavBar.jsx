@@ -1,7 +1,10 @@
 import styled from "styled-components";
 import { LayoutDashboard, Package, History } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function NavBar() {
+
+    const navigate = useNavigate();
 
     const NavBar = styled.nav`
         display: flex;
@@ -24,17 +27,17 @@ export default function NavBar() {
         <>
             <NavBar>
 
-                <Options>
+                <Options onClick={() => navigate(`/`)}>
                     <LayoutDashboard />
                     <p>Dashboard</p>
                 </Options>
 
-                <Options>
+                <Options onClick={() => navigate(`/produtos`)}>
                     <Package />
                     <p>Produtos</p>
                 </Options>
 
-                <Options>
+                <Options onClick={() => navigate(`/historico`)}>
                     <History />
                     <p>Histórico</p>
                 </Options>
