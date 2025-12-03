@@ -13,8 +13,8 @@ const PrivateRoute = ({ children }) => {
 export function Rotas() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+      <Route path="/" element={<Login />} />
+      <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
       <Route path="/produtos" element={<PrivateRoute><Produto /></PrivateRoute>} />
       <Route path="/historico" element={<PrivateRoute><Historico /></PrivateRoute>} />
     </Routes>

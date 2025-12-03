@@ -191,7 +191,7 @@ const Login = () => {
       localStorage.setItem("usuario", JSON.stringify(userData));
 
       // Redirecionar para a página principal
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       setErro(error.message || "Erro ao fazer login. Tente novamente.");
     } finally {
@@ -263,7 +263,7 @@ const Login = () => {
 
         <Footer>
           <p>
-            <strong>Usuário de teste:</strong> lin@gmail.com
+            <strong>Usuário de teste:</strong> lin@senai.com
             <br />
             <strong>Senha:</strong> 123
           </p>

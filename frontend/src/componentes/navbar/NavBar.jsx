@@ -27,7 +27,7 @@ export default function NavBar() {
         <>
             <NavBar>
 
-                <Options onClick={() => navigate(`/`)}>
+                <Options onClick={() => navigate(`/home`)}>
                     <LayoutDashboard />
                     <p>Dashboard</p>
                 </Options>

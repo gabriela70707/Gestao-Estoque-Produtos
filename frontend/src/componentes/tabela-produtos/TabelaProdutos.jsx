@@ -1,6 +1,5 @@
 import styled from "styled-components";
-import { Pencil, Trash2, Smartphone, Monitor } from "lucide-react";
-
+import { Pencil, Trash2, Smartphone, Monitor, Tv } from "lucide-react";
 
 const TabelaContainer = styled.div`
   margin-top: 2rem;
@@ -134,17 +133,36 @@ const BotaoAcao = styled.button`
   }
 `;
 
-export function TabelaProdutos({ produtos = produtosExemplo }) {
+const MensagemVazia = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+  font-size: 1rem;
+`;
+
+export function TabelaProdutos({ produtos = [], onEditar, onExcluir }) {
   const getIconeCategoria = (categoria) => {
     switch(categoria.toLowerCase()) {
       case 'smartphone':
         return <Smartphone size={18} />;
       case 'notebook':
         return <Monitor size={18} />;
+      case 'smart tv':
+        return <Tv size={18} />;
       default:
         return <Smartphone size={18} />;
     }
   };
+
+  if (produtos.length === 0) {
+    return (
+      <TabelaContainer>
+        <MensagemVazia>
+          Nenhum produto encontrado. Cadastre um novo produto!
+        </MensagemVazia>
+      </TabelaContainer>
+    );
+  }
 
   return (
     <TabelaContainer>
@@ -194,14 +212,14 @@ export function TabelaProdutos({ produtos = produtosExemplo }) {
                   <AcoesContainer>
                     <BotaoAcao 
                       className="editar"
-                      onClick={() => console.log('Editar:', produto.id)}
+                      onClick={() => onEditar(produto.id)}
                       aria-label="Editar produto"
                     >
                       <Pencil size={18} />
                     </BotaoAcao>
                     <BotaoAcao 
                       className="excluir"
-                      onClick={() => console.log('Excluir:', produto.id)}
+                      onClick={() => onExcluir(produto.id)}
                       aria-label="Excluir produto"
                     >
                       <Trash2 size={18} />
@@ -216,85 +234,3 @@ export function TabelaProdutos({ produtos = produtosExemplo }) {
     </TabelaContainer>
   );
 }
-
-// Dados de exemplo baseados nas imagens
-const produtosExemplo = [
-  {
-    id: 1,
-    nome: "iPhone 15 Pro",
-    detalhes: "Apple - iPhone 15 Pro 256GB",
-    categoria: "Smartphone",
-    quantidade: 15,
-    minimo: 10,
-    especificacoes: [
-      "Tela: 2796 x 1290",
-      "Armazenamento: 256GB",
-      "RAM: 8GB"
-    ]
-  },
-  {
-    id: 2,
-    nome: "Galaxy S24 Ultra",
-    detalhes: "Samsung - Galaxy S24 Ultra 512GB",
-    categoria: "Smartphone",
-    quantidade: 8,
-    minimo: 10,
-    especificacoes: [
-      "Tela: 3120 x 1440",
-      "Armazenamento: 512GB",
-      "RAM: 12GB"
-    ]
-  },
-  {
-    id: 3,
-    nome: "MacBook Pro 16\"",
-    detalhes: "Apple - MacBook Pro M3 Pro",
-    categoria: "Notebook",
-    quantidade: 5,
-    minimo: 5,
-    especificacoes: [
-      "Tela: 3456 x 2234",
-      "Armazenamento: 512GB SSD",
-      "RAM: 18GB",
-      "Tensão: 100-240V"
-    ]
-  },
-  {
-    id: 4,
-    nome: "Dell XPS 15",
-    detalhes: "Dell - XPS 15 9530",
-    categoria: "Notebook",
-    quantidade: 3,
-    minimo: 5,
-    especificacoes: [
-      "Tela: 3840 x 2400",
-      "Armazenamento: 1TB SSD",
-      "RAM: 32GB",
-      "Tensão: 100-240V"
-    ]
-  },
-  {
-    id: 5,
-    nome: "Samsung Neo QLED 65\"",
-    detalhes: "Samsung - QN65QN90C",
-    categoria: "Smart TV",
-    quantidade: 12,
-    minimo: 8,
-    especificacoes: [
-      "Tela: 3840 x 2160 (4K)",
-      "Tensão: 110-220V"
-    ]
-  },
-  {
-    id: 6,
-    nome: "LG OLED 77\"",
-    detalhes: "LG - OLED77C3PSA",
-    categoria: "Smart TV",
-    quantidade: 4,
-    minimo: 6,
-    especificacoes: [
-      "Tela: 3840 x 2160 (4K)",
-      "Tensão: 110-220V"
-    ]
-  }
-];

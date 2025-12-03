@@ -32,7 +32,7 @@ app = FastAPI(title="SAEP - Sistema de Gestão de Equipamentos")
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins = ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
